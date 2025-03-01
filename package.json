@@ -23,11 +23,19 @@
         "commands": [
             {
                 "command": "imageTagger.open",
-                "text": "Image Tagger",
-                "alignment": "left",
-                "priority": 100
+                "title": "Open in Image Tagger",
+                "category": "Image Tagger"
             }
-        ]
+        ],
+        "menus": {
+            "explorer/context": [
+                {
+                    "command": "imageTagger.open",
+                    "when": "resourceType == 'folder' || explorerResourceIsFolder", 
+                    "group": "navigation"
+                }
+            ]
+        }
     },
     "scripts": {
         "compile": "tsc && vite build",
@@ -47,6 +55,7 @@
     },
     "dependencies": {
         "@vitejs/plugin-vue": "^5.2.1",
+        "@vscode/webview-ui-toolkit": "^1.4.0",
         "sass": "^1.85.1",
         "vite": "^6.2.0",
         "vite-plugin-html": "^3.2.2",

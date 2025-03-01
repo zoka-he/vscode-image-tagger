@@ -1,11 +1,14 @@
 import './global.scss';  
 import { createApp, ref } from 'vue'
 import App from './App.vue'
-
-const vscode = acquireVsCodeApi();
+import '@vscode/webview-ui-toolkit/dist/toolkit.js';
+import { bindVscode } from './utils';
 
 document.addEventListener('DOMContentLoaded', () => {
+    bindVscode();
+
     const app = createApp(App);
+    app.config.compilerOptions.isCustomElement = (tag) => tag.startsWith('vscode-');
     app.mount('#app');
 
 

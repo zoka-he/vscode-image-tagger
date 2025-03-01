@@ -1,4 +1,50 @@
+/* 让 VS Code Webview UI 组件跟随主题 */
+:root {
+    --vscode-input-background: #ffffff;
+    --vscode-input-foreground: #000000;
+    --vscode-button-background: #007acc;
+    --vscode-button-foreground: #ffffff;
+    --vscode-button-hoverBackground: #005f9e;
+}
+
+html, body {
+    height: 100%; 
+}
+
 body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+
 .vueapp { 
-    max-width: 100%; margin: 0 auto; padding: 20px; 
+    width: 100%; margin: 0 auto; padding: 20px; 
+    height: 100%;
+    box-sizing: border-box;
+}
+
+
+
+body {
+    background-color: var(--vscode-editor-background, #fff);
+    color: var(--vscode-editor-foreground, #000);
+    font-family: var(--vscode-font-family, sans-serif);
+}
+
+input {
+    background: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border: 1px solid var(--vscode-input-border, #ccc);
+    padding: 8px;
+    border-radius: 4px;
+    width: 100%;
+}
+
+button {
+    background: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: var(--vscode-button-hoverBackground);
 }

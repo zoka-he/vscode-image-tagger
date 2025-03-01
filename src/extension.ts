@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
-import { AnnotationPanel } from './panel';
+import { TaggerPanelMgr } from './panel';
 
 export function activate(context: vscode.ExtensionContext) {
 
     let myCommandId = 'imageTagger.open';
 
-    // 注册右键目录打开插件命令
+    // 注册打开插件命令
     let disposable = vscode.commands.registerCommand(myCommandId, (uri: vscode.Uri | null) => {
-        AnnotationPanel.createOrShow(context, uri?.fsPath || null);
+        TaggerPanelMgr.createOrShow(context, uri?.fsPath || null);
     });
     
 
