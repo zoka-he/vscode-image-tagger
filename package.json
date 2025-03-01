@@ -4,44 +4,52 @@
     "description": "A VS Code extension for tagging images with text files",
     "version": "0.0.1",
     "repository": {
-      "type": "git",
-      "url": "https://github.com/zoka-he/vscode-image-tagger.git"
+        "type": "git",
+        "url": "https://github.com/zoka-he/vscode-image-tagger.git"
     },
     "publisher": "zoka-he",
     "license": "MIT",
     "engines": {
-      "vscode": "^1.75.0"
+        "vscode": "^1.75.0"
     },
-    "categories": ["Other"],
+    "categories": [
+        "Other"
+    ],
     "activationEvents": [
-      "*"
+        "onStartupFinished"
     ],
     "main": "./out/extension.js",
     "contributes": {
-      "commands": [
-        {
-          "command": "imageTagger.open",
-          "text": "Image Tagger",
-          "alignment": "left",
-          "priority": 100
-        }
-      ]
+        "commands": [
+            {
+                "command": "imageTagger.open",
+                "text": "Image Tagger",
+                "alignment": "left",
+                "priority": 100
+            }
+        ]
     },
     "scripts": {
-      "compile": "tsc",
-      "watch": "tsc -w",
-      "pretest": "npm run compile",
-      "test": "node ./out/test/runTest.js",
-      "package": "vsce package",
-      "build": "npm run compile && npm run package",
-      "install:vsce": "npm install -g @vscode/vsce"
+        "compile": "tsc && vite build",
+        "watch": "tsc -w",
+        "pretest": "npm run compile",
+        "test": "node ./out/test/runTest.js",
+        "package": "vsce package",
+        "build": "npm run compile && npm run package",
+        "install:vsce": "npm install -g @vscode/vsce"
     },
     "devDependencies": {
-      "@types/node": "^18.0.0",
-      "@types/vscode": "^1.75.0",
-      "typescript": "^5.0.0",
-      "eslint": "^8.0.0",
-      "vsce": "^2.15.0"
+        "@types/node": "^18.0.0",
+        "@types/vscode": "^1.75.0",
+        "eslint": "^8.0.0",
+        "typescript": "^5.0.0",
+        "vsce": "^2.15.0"
+    },
+    "dependencies": {
+        "@vitejs/plugin-vue": "^5.2.1",
+        "sass": "^1.85.1",
+        "vite": "^6.2.0",
+        "vite-plugin-html": "^3.2.2",
+        "vue": "^3.5.13"
     }
-  }
-  
+}

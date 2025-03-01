@@ -7,7 +7,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // 注册右键目录打开插件命令
     let disposable = vscode.commands.registerCommand(myCommandId, (uri: vscode.Uri | null) => {
-        AnnotationPanel.createOrShow(context.extensionUri, uri?.fsPath || null);
+        AnnotationPanel.createOrShow(context, uri?.fsPath || null);
     });
     
 

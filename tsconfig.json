@@ -10,6 +10,6 @@
         "forceConsistentCasingInFileNames": true,
         "skipLibCheck": true
     },
-    "include": ["src"],                      // 编译 `src` 目录下的所有文件
+    "include": ["src", "webview"],                      // 编译 `src` 目录下的所有文件
     "exclude": ["node_modules", ".vscode", "out"]
 }
