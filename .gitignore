@@ -1,0 +1,26 @@
+# Node.js
+node_modules/
+out/
+
+# TypeScript
+*.tsbuildinfo
+
+# VS Code
+.vscode/
+
+# VS Code Extension Packaging
+.vscode-test/
+
+# Debugger for Chrome
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+
+# IDE files
+.idea/
+.vscode/
