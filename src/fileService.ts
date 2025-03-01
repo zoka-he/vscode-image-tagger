@@ -2,7 +2,11 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 
 export class FileService {
-    static async getImages(directory: string): Promise<string[]> {
+    static async getImages(directory: string | null): Promise<string[]> {
+        if (!directory) {
+            return []; 
+        }
+
         const files = await fs.readdir(directory);
         return files.filter(file => file.match(/\.(jpg|jpeg|png|gif)$/i));
     }

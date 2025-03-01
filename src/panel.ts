@@ -6,9 +6,9 @@ export class AnnotationPanel {
     public static currentPanel: AnnotationPanel | undefined;
     private readonly panel: vscode.WebviewPanel;
     private readonly extensionUri: vscode.Uri;
-    private imageDir: string;
+    private imageDir: string | null;
 
-    private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, imageDir: string) {
+    private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, imageDir: string | null) {
         this.panel = panel;
         this.extensionUri = extensionUri;
         this.imageDir = imageDir;
@@ -20,15 +20,15 @@ export class AnnotationPanel {
         this.update();
     }
 
-    public static createOrShow(extensionUri: vscode.Uri, imageDir: string) {
+    public static createOrShow(extensionUri: vscode.Uri, imageDir: string | null) {
         if (AnnotationPanel.currentPanel) {
             AnnotationPanel.currentPanel.panel.reveal(vscode.ViewColumn.One);
             return;
         }
 
         const panel = vscode.window.createWebviewPanel(
-            'imageAnnotator',
-            'Image Annotator',
+            'imageTagger',
+            'Image Tagger',
             vscode.ViewColumn.One,
             {
                 enableScripts: true,
