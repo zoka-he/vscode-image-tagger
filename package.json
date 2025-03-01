@@ -2,35 +2,30 @@
     "name": "image-tagger",
     "displayName": "Image tagger",
     "description": "A VS Code extension for tagging images with text files",
-    "version": "1.0.0",
+    "version": "0.0.1",
     "repository": {
       "type": "git",
       "url": "https://github.com/zoka-he/vscode-image-tagger.git"
     },
+    "publisher": "zoka-he",
     "license": "MIT",
     "engines": {
       "vscode": "^1.75.0"
     },
     "categories": ["Other"],
     "activationEvents": [
-      "onCommand:imageTagger.open"
+      "*"
     ],
     "main": "./out/extension.js",
     "contributes": {
       "commands": [
         {
-          "command": "imageAnnotator.open",
-          "title": "Open Image Annotator"
+          "command": "imageTagger.open",
+          "text": "Image Tagger",
+          "alignment": "left",
+          "priority": 100
         }
-      ],
-      "menus": {
-        "explorer/context": [
-          {
-            "command": "imageAnnotator.open",
-            "group": "navigation"
-          }
-        ]
-      }
+      ]
     },
     "scripts": {
       "compile": "tsc",
@@ -38,6 +33,7 @@
       "pretest": "npm run compile",
       "test": "node ./out/test/runTest.js",
       "package": "vsce package",
+      "build": "npm run compile && npm run package",
       "install:vsce": "npm install -g @vscode/vsce"
     },
     "devDependencies": {
