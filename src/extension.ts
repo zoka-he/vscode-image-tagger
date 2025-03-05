@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { TaggerPanelMgr } from './panel';
+import LogService from './services/logService';
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -22,6 +23,12 @@ export function activate(context: vscode.ExtensionContext) {
 
     // 显示按钮
     statusBarButton.show(); 
+
+    // 注册logger
+    const outputChannel = vscode.window.createOutputChannel("Image Tagger");
+    outputChannel.show(); // 使 Output 视图可见
+    LogService.create(outputChannel);
+    LogService.log("Image Tagger activated");
 }
 
 export function deactivate() {}

@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { FileService } from './fileService';
+import { FileService } from './services/fileService';
 import msgHandlers from './msgHandlers';
-import PathService from './pathService';
+import PathService from './services/pathService';
+import LogService from './services/logService';
 
 export class TaggerPanelMgr {
     public static currentMgr: TaggerPanelMgr | undefined;
@@ -30,7 +31,7 @@ export class TaggerPanelMgr {
             vscode.ViewColumn.One,
             {
                 enableScripts: true,
-                localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'out', 'webview'))],
+                localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'out', 'webview'))] // 允许访问所有文件
             }
         );
 
@@ -44,6 +45,7 @@ export class TaggerPanelMgr {
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${panel.webview.cspSource} vscode-webview-resource: data:; script-src ${panel.webview.cspSource}; style-src ${panel.webview.cspSource};">
                 <title>Image Tagger</title>
                 <link rel="stylesheet" href="${styleUri}">
             </head>
@@ -58,6 +60,7 @@ export class TaggerPanelMgr {
         // 监听 Webview 发送的消息，并处理它们
         panel.webview.onDidReceiveMessage(
             async (message) => {
+                LogService.log(message);
                 let handler = msgHandlers[message.command];
                 if (handler) {
                     handler(panel, message, this);
@@ -96,7 +99,7 @@ export class TaggerPanelMgr {
     }
 
     // private async update() {
-    //     const images = await FileService.getImages(this.imageDir);
+    //     const images = await FileService.getImageNames(this.imageDir);
     //     const webviewUri = vscode.Uri.joinPath(this.extensionUri, 'out', 'webview', 'index.html');
     //     const content = (await vscode.workspace.fs.readFile(webviewUri)).toString();
 

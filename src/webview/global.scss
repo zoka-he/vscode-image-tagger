@@ -27,13 +27,12 @@ body {
     font-family: var(--vscode-font-family, sans-serif);
 }
 
-input {
+input, textarea {
     background: var(--vscode-input-background);
     color: var(--vscode-input-foreground);
     border: 1px solid var(--vscode-input-border, #ccc);
     padding: 8px;
     border-radius: 4px;
-    width: 100%;
 }
 
 button {
@@ -47,4 +46,8 @@ button {
 
 button:hover {
     background: var(--vscode-button-hoverBackground);
+}
+
+.fit-width {
+    width: 100%; 
 }
