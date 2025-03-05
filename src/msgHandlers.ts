@@ -54,7 +54,7 @@ async function getImageInfos(panel: vscode.WebviewPanel, message: any) {
 
         // 读取图片文件并转换为 Base64 编码
         let imagePath = path.join(dirPath, name);
-        let imgSrc = await FileService.loadImageAsSrc(imagePath);
+        let imgInfo = await FileService.getImageInfos(imagePath);
 
         // 读取图片的标签文件内容
         let tagPath = FileService.changeExtName(imagePath, 'txt');
@@ -64,8 +64,7 @@ async function getImageInfos(panel: vscode.WebviewPanel, message: any) {
         panel.webview.postMessage({ 
             command: "updateImgInfo", 
             info: {
-                name: name,
-                src: imgSrc,
+                ...imgInfo,
                 tag: imgTag,
                 imgPath: imagePath,
                 tagPath: tagPath,

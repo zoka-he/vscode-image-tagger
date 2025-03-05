@@ -14,9 +14,10 @@ html, body {
 body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
 
 .vueapp { 
-    width: 100%; margin: 0 auto; padding: 20px; 
+    width: 100%; margin: 0 auto;
     height: 100%;
     box-sizing: border-box;
+    overflow: auto;
 }
 
 
@@ -48,6 +49,35 @@ button:hover {
     background: var(--vscode-button-hoverBackground);
 }
 
+hr {
+    border-color: var(--vscode-divider-color);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+
+    tr {
+        &:nth-child(even) {
+            background-color: var(--vscode-list-hoverBackground);
+        }
+        &:nth-child(odd) {
+            background-color: transparent;
+        }
+
+        // 添加悬停效果
+        &:hover {
+            background-color: var(--vscode-list-activeSelectionBackground);
+        }
+    }
+
+    td {
+        padding: 5px;
+        border: 1px solid var(--vscode-panel-border);
+    }
+}
+
 .fit-width {
     width: 100%; 
+    box-sizing: border-box;
 }

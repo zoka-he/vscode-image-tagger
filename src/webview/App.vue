@@ -1,37 +1,41 @@
-<template>
-  <div class="app-content">
-    <div class="app-title">
-      <h1>Image Tagger</h1>
-      <div class="folder-ctl">
-        <input class="fit-width" type="text" v-model="filePath"></input>
-        <button @click="selectFile">打开</button>
-        <button @click="batchGetImangeNames">刷新</button>
-      </div>
-    </div>
-    <hr>
-    <div class="app-workspace">
-      <div class="app-left">
-        <h2>图片清单（{{imgLoadCnt}}/{{imgTotalCnt}}）</h2>
-        <div>
-          <ul class="img-paths">
-            <li v-for="(info, index) in imageList" :key="index">
-              <button @click="setCurrentImage(info)">{{ info.name }}</button>
-            </li>
-          </ul>
-        </div>  
-      </div>
-      <div class="app-right">
-        <h2>图片预览</h2>
-        <div>
-          <img :src="currentImage.src" :alt="currentImage.name" />
-        </div>
-        <h2>图片描述</h2>
-        <div>
-          <textarea v-model="currentImage.tag" rows="10" cols="50"></textarea>
-        </div>
-      </div>
-    </div>
-  </div>
+<template lang="pug">
+  div.app-content
+    div.app-title
+      h1 Image Tagger
+      div.folder-ctl
+        input.fit-width(type="text" v-model="filePath")
+        button(@click="selectFile") 打开
+        button(@click="batchGetImangeNames") 刷新
+      
+    hr 
+
+    div.app-workspace
+      div.app-left
+        h2 图片清单（{{imgLoadCnt}}/{{imgTotalCnt}}）
+        div.list-wrap
+          table
+            tbody
+              tr(v-for="(info, index) in imageList" :key="index"  :class="{ 'is-current': info.name === currentImage.name }" @click="setCurrentImage(info)")
+                td {{ index + 1 }}
+                td {{ info.name }}
+                td {{ info.ext }}
+                td {{ info.width }} x {{ info.height }}
+            
+      div.app-middle
+        div.app-middle-upper
+          div.app-middle-upper-left
+            div.img-ctl
+              h2 图片预览
+            div.img-wrap
+              img(:src="currentImage.src" :alt="currentImage.name")
+          div.app-middle-upper-right
+            h2 图片信息
+        
+        div.tag-ctl
+          h2 图片描述
+        div.tag-wrap
+          textarea.fit-width(v-model="currentImage.tag" rows="6")
+        
 </template>
 
 <script setup>
@@ -193,10 +197,15 @@ onMounted(() => {
 .app-content {
   display: flex;
   flex-direction: column;
+  overflow: hidden auto;
+  padding: 10px 20px;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .app-title {
   width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -224,14 +233,67 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: row;
+  overflow: auto;
 }
 
 .app-left {
-  min-width: 200px;
+  min-width: 300px;
+  padding: 0 10px 0 0;
+  overflow: auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  div.list-wrap {
+    flex: 1;
+    overflow: auto; 
+  }
 }
 
-.app-right {
+.app-middle {
   flex: 1; 
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding-left: 20px;
+
+  .tag-wrap {
+
+  }
+}
+
+.app-middle-upper {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  overflow: auto;
+}
+
+.app-middle-upper-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  .img-wrap {
+    flex: 1; 
+    overflow: hidden;
+    text-align: center;
+
+    img {
+      height: 100%;
+      margin: auto;
+    }
+  } 
+}
+
+.app-middle-upper-right {
+  min-width: 300px;
+  height: 100%;
+  padding: 0 0 0 20px;
+  overflow: auto; 
+  box-sizing: border-box;
 }
 
 h1 {
@@ -252,6 +314,13 @@ ul.img-paths {
   }
 }
 
+tr.is-current {
+  background-color: #1E90FF;
+
+  td {
+    color: white;
+  }
+}
 
 </style>
 

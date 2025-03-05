@@ -1,10 +1,14 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import sharp from 'sharp';
 
-type FileInfo = {
+type ImageInfo = {
     name: string;
-    webviewUri: string;
+    ext: string;
+    src: string;
+    width: number;
+    height: number;
 }
 
 export class FileService {
@@ -17,23 +21,6 @@ export class FileService {
         return files.filter(file => file.match(/\.(jpg|jpeg|png|gif)$/i));
     }
 
-    /**
-     * 获取指定目录下所有图片文件的信息
-     * @param panel - 用于生成 Webview URI 的 VSCode Webview 面板
-     * @param directory - 要搜索图片文件的目录路径，如果为 null 则返回空数组
-     * @returns 一个 Promise，解析为包含图片文件信息的数组，每个信息包含文件名和 Webview URI
-     */
-    static async getImagesInfo(panel: vscode.WebviewPanel, directory: string | null): Promise<FileInfo[]> {
-        let fileNames = await FileService.getImageNames(directory);
-        let fileInfos = fileNames.map(fileName => {
-            let filePath = path.join(directory || '', fileName);
-            return {
-                name: fileName,
-                webviewUri: panel.webview.asWebviewUri(vscode.Uri.file(filePath)).toString(),
-            };
-        });
-        return fileInfos;
-    }
 
     /**
      * 将指定路径的图片文件读取为 Base64 编码的字符串
@@ -50,6 +37,36 @@ export class FileService {
 
         return srcString;
     }
+
+    static async getImageInfos(fpath: string | null): Promise<ImageInfo> {
+        let template: ImageInfo = {
+            name: '',
+            ext: '',
+            src: '',
+            width: 0,
+            height: 0,
+        }
+
+        if (!fpath) {
+            return template;
+        }
+
+        const fileData = (await fs.readFile(fpath)).toString('base64'); // 读取文件并转换为 Base64
+        const extName = path.extname(fpath).substring(1);   // 获取扩展名，并去掉 .
+        const srcString = `data:image/${extName};base64,${fileData}`; // 生成 Base64 格式的图片数据
+
+        // 获取图片尺寸
+        const { width, height } = await sharp(fpath).metadata();
+
+        template.name = path.basename(fpath);
+        template.ext = extName;
+        template.src = srcString;
+        template.width = width || 0;
+        template.height = height || 0;
+
+        return template;
+    }
+
 
     static changeExtName(fpath: string, extName: string): string {
         let dir = path.dirname(fpath);
