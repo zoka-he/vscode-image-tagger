@@ -74,6 +74,57 @@ export class FileService {
         return path.join(dir, name + '.' + extName);
     }
 
+    /**
+     * 备份指定路径的文件
+     * @param filePath - 要备份的文件路径
+     * @returns 备份文件的路径
+     */
+    static async backupFile(filePath: string): Promise<string> {
+        // 读取原文件到内存
+        const originalFile = await fs.readFile(filePath);
+
+        // 查找可用的备份后缀
+        let backupCount = 0;
+        let backupPath: string;
+        do {
+            backupPath = `${filePath}.bak.${backupCount.toString().padStart(3, '0')}`;
+            try {
+                await fs.access(backupPath);
+                backupCount++;
+            } catch {
+                break;
+            }
+        } while (true);
+
+        // 备份原文件
+        await fs.writeFile(backupPath, originalFile);
+        return backupPath;
+    }
+
+    static async backupImageAndFixSizeAndExt(imagePath: string, targetExt: string, targetWidth: number, targetHeight: number): Promise<ImageInfo> {
+        
+        // 备份原图片，之所以写死在这里是怕忘记调用
+        await this.backupFile(imagePath);
+
+        // 读取原图片到内存
+        const originalImage = await fs.readFile(imagePath);
+
+        // 调整图片大小并保存为新格式
+        const resizedImage = await sharp(originalImage)
+            .resize(targetWidth, targetHeight, {
+                fit: sharp.fit.contain,
+                background: { r: 255, g: 255, b: 255, alpha: 1 }
+            })
+           .toFormat(targetExt as unknown as sharp.AvailableFormatInfo)
+           .toBuffer();
+
+        const newImagePath = this.changeExtName(imagePath, targetExt);
+        await fs.writeFile(newImagePath, resizedImage);
+
+        // 返回新图片的信息
+        return this.getImageInfos(newImagePath);
+    }
+
     static async readText(filePath: string): Promise<string> {
         try {
             return await fs.readFile(filePath, 'utf-8');

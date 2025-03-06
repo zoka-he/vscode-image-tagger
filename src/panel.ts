@@ -1,37 +1,37 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { FileService } from './services/fileService';
 import msgHandlers from './msgHandlers';
 import PathService from './services/pathService';
 import LogService from './services/logService';
 
-export class TaggerPanelMgr {
-    public static currentMgr: TaggerPanelMgr | undefined;
-    private readonly panel: vscode.WebviewPanel;
-    private readonly extensionUri: vscode.Uri;
-    public imageDir: string | null;
+export class TaggerPanel {
+    public static currentMgr: TaggerPanel | undefined;
+    private initDir: string | null = null;
+    private currentDir: string | null = null;
+    private panel: vscode.WebviewPanel | undefined;
 
     private constructor(context: vscode.ExtensionContext, imageDir: string | null) {
 
-        let { extensionUri, extensionPath } = context;
+        let { extensionPath } = context;
 
         if (!imageDir) {
             imageDir = PathService.getWorkDir() || '';
         }
 
-        this.extensionUri = extensionUri;
-        this.imageDir = imageDir;
+        this.initDir = imageDir;
+        this.currentDir = imageDir;
+        const dirName = path.basename(imageDir);
 
 
 
         // 创建一个新的 Webview 面板
         const panel = vscode.window.createWebviewPanel(
-            'ImageTagger',
-            'Image Tagger',
+            'ImageTagger', // 面板类型
+            'Image Tagger - ' + dirName, // 面板标题
             vscode.ViewColumn.One,
             {
                 enableScripts: true,
-                localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'out', 'webview'))] // 允许访问所有文件
+                localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'out', 'webview'))] // 允许访问资源文件
             }
         );
 
@@ -71,50 +71,41 @@ export class TaggerPanelMgr {
         );
 
         panel.onDidDispose(() => {
-            TaggerPanelMgr.currentMgr = undefined;
+            TaggerPanel.currentMgr = undefined;
         });
 
         this.panel = panel;
-
-        // this.update();
     }
 
-    public static createOrShow(context: vscode.ExtensionContext, imageDir: string | null) {
-        // 如果已经有一个面板，则复用它
-        if (TaggerPanelMgr.currentMgr) {
-            // 调出面板
-            let panel = TaggerPanelMgr.currentMgr.panel;
-            panel.reveal(vscode.ViewColumn.One);
-            // 请求更新工作路径
-            panel.webview.postMessage({ command: "updateFilePath", path: imageDir || '' });
+    public static create(context: vscode.ExtensionContext, imageDir: string | null) {
+        TaggerPanel.currentMgr = new TaggerPanel(context, imageDir);
+    }
 
-            // TODO 更新管理器的工作路径（后续需得到面板的同意才能更新）
-            TaggerPanelMgr.currentMgr.imageDir = imageDir;
+    /**
+     * 获取初始化目录
+     * @returns 初始化目录
+     */
+    public getInitDir() {
+        return this.initDir || '';
+    }
 
-            return;
+    /**
+     * 修改面板的标题
+     * @param title 新的标题
+     */
+    public setPanelTitle(title: string) {
+        if (this.panel) {
+            this.panel.title = title;
         }
-
-        // 切换到新的panel
-        TaggerPanelMgr.currentMgr = new TaggerPanelMgr(context, imageDir);
     }
 
-    // private async update() {
-    //     const images = await FileService.getImageNames(this.imageDir);
-    //     const webviewUri = vscode.Uri.joinPath(this.extensionUri, 'out', 'webview', 'index.html');
-    //     const content = (await vscode.workspace.fs.readFile(webviewUri)).toString();
+    /**
+     * 修改当前目录
+     * @returns 当前目录
+     */
+    public setCurrentDir(dir: string) {
+        this.currentDir = dir;
+        this.setPanelTitle('Image Tagger - '+ path.basename(dir));
+    }
 
-    //     this.panel.webview.html = content.replace(
-    //         '{{imageList}}',
-    //         JSON.stringify(images)
-    //     );
-
-    //     this.panel.webview.onDidReceiveMessage(async (message) => {
-    //         if (message.command === 'loadText') {
-    //             const text = await FileService.readText(message.filePath);
-    //             this.panel.webview.postMessage({ command: 'displayText', text });
-    //         } else if (message.command === 'saveText') {
-    //             await FileService.writeText(message.filePath, message.text);
-    //         }
-    //     });
-    // }
 }

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { TaggerPanelMgr } from './panel';
+import { TaggerPanel } from './panel';
 import LogService from './services/logService';
 
 export function activate(context: vscode.ExtensionContext) {
@@ -8,7 +8,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // 注册打开插件命令
     let disposable = vscode.commands.registerCommand(myCommandId, (uri: vscode.Uri | null) => {
-        TaggerPanelMgr.createOrShow(context, uri?.fsPath || null);
+        TaggerPanel.create(context, uri?.fsPath || null);
     });
     
 

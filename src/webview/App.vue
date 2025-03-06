@@ -6,8 +6,22 @@
         input.fit-width(type="text" v-model="filePath")
         button(@click="selectFile") 打开
         button(@click="batchGetImangeNames") 刷新
-      
-    hr 
+
+    div.app-cfg
+      form
+        label 目标图片格式：
+        select(v-model="targetExt")
+          option(v-for="option in extOptions" :value="option") {{ option }}
+        
+        label 目标图片尺寸：
+        input(:style="{ width: '3rem' }" type="number" v-model="targetWidth")
+        span x
+        input(:style="{ width: '3rem' }" type="number" v-model="targetHeight")
+
+        label 标签关键字：
+        input(:style="{ width: '40rem' }" type="search" @input="debounceSetTagKeyword")
+
+    hr     
 
     div.app-workspace
       div.app-left
@@ -15,7 +29,8 @@
         div.list-wrap
           table
             tbody
-              tr(v-for="(info, index) in imageList" :key="index"  :class="{ 'is-current': info.name === currentImage.name }" @click="setCurrentImage(info)")
+              tr(v-for="(info, index) in imageList" :key="index" @click="setCurrentImage(info)"
+              :class="{ 'is-current': info.name === currentImage.name, 'is-err': checkImg(info).failCnt > 0 }" )
                 td {{ index + 1 }}
                 td {{ info.name }}
                 td {{ info.ext }}
@@ -29,7 +44,9 @@
             div.img-wrap
               img(:src="currentImage.src" :alt="currentImage.name")
           div.app-middle-upper-right
-            h2 图片信息
+            h2 图片问题
+            ImgProblem(:settings="targetSettings" :imgInfo="currentImage" :imgList="imageList") // 传递所需的 props
+
         
         div.tag-ctl
           h2 图片描述
@@ -39,14 +56,24 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, computed } from "vue";
 import { getVscode } from './utils';
+import _ from 'lodash';
+import ImgProblem from "./components/ImgProblem.vue";
 
 const filePath = ref("");
 const imageList = ref([]);
 const currentImage = ref("");
 const imgLoadCnt = ref(0);
 const imgTotalCnt = ref(0);
+
+const targetExt = ref("jpg");
+const targetWidth = ref(512);
+const targetHeight = ref(512);
+const tagKeyword = ref("");
+const extOptions = ["jpg", "png", "jpeg", "bmp"];
+
+const imgCheckMap = ref({});
 
 // 基本动作区 
 
@@ -86,8 +113,137 @@ const saveTag = (tagPath, tagContent) => {
   getVscode().postMessage({ command: "saveTag", path: tagPath, content: tagContent });
 }
 
+const checkImg = (imgInfo) => {
+  // 检查图片是否符合要求
+  const { ext, width, height, tag } = imgInfo;
+
+  let checkState = {
+    failCnt: 0,
+    errExt: false,
+    errSize: false,
+    errTag: false,
+  }
+
+  if (ext !== targetExt.value) {
+    checkState.failCnt++;
+    checkState.errExt = true;
+  }
+
+  if (width!== targetWidth.value || height!== targetHeight.value) {
+    checkState.failCnt++;
+    checkState.errSize = true;
+  }
+
+  if (tagKeyword.value && !tag.includes(tagKeyword.value)) {
+    checkState.failCnt++;
+    checkState.errTag = true;
+  }
+
+  return checkState;
+}
+
+function debounceSetTagKeyword(event) {
+  _.debounce(() => {
+    tagKeyword.value = event.target.value;
+  }, 200)();
+}
+
 
 // 监听区
+
+/**
+ * 处理根目录变更消息
+ * @param event 消息事件
+ */
+function handleUpdateFilePath(event) {
+  const path = event.data?.path || '';
+  filePath.value = path; // 回填路径到输入框，触发整体更新
+  getVscode().postMessage({ command: "setCurrentDir", path });
+}
+
+/**
+ * 处理图片列表变更消息
+ * @param event 消息事件
+ */
+function handleUpdateImgNames(event) {
+  const imageNames = event.data?.imageNames || [];
+
+  // 更新图片列表，仅更新name属性，其他属性置空
+  imageList.value = imageNames.map((name) => {
+    return {
+      name,
+      src: '',
+      tag: '',
+      imgPath: '',
+      tagPath: ''
+    }
+  });
+
+  // 重置加载进度
+  imgLoadCnt.value = 0;
+  imgTotalCnt.value = imageNames.length;
+
+  // 清除掉tag过滤
+  tagKeyword.value = '';
+
+  // 重置img问题表
+  imgCheckMap.value = {};
+
+  // 顺带配置当前图片, 优先使用第一张图片, 否则置空，未补全的属性也置空
+  let imgTemplate = {
+    name: '',
+    src: '',
+    tag: '',
+    imgPath: '',
+    tagPath: ''
+  }
+  if (imageNames.length) {
+    imgTemplate.name = imageNames[0];
+  } 
+  currentImage.value = imgTemplate;
+
+  // 顺带加载图片信息
+  batchGetImangeInfo();
+}
+
+/**
+ * 处理图片信息变更消息
+ * @param event 消息事件
+ */ 
+function handleUpdateImgInfo(event) {
+  const imgInfo = event.data?.info || {};
+  const loadCnt = event.data?.loadCnt;
+  const totalCnt = event.data?.total;
+
+  const indexName = imgInfo.oldName || imgInfo.name;
+  const index = imageList.value.findIndex((item) => item.name === indexName);
+
+  // 更新图片列表对应图片的src
+  if (index !== -1) {
+    imageList.value.splice(index, 1, imgInfo);
+  }
+
+  // 更新加载进度, 假如 event.data 真的有这两个值才更新，否则不更新
+  if (loadCnt!== undefined) {
+    imgLoadCnt.value = loadCnt;
+  }
+
+  if (totalCnt!== undefined) {
+    imgTotalCnt.value = totalCnt;
+  }
+
+  // 更新当前图片（如果匹配）
+  if (currentImage.value.name === indexName) {
+    currentImage.value = imgInfo;
+  }
+}
+
+// 挂载消息处理函数
+const handlerMap = {
+  updateFilePath: handleUpdateFilePath,
+  updateImgNames: handleUpdateImgNames,
+  updateImgInfo: handleUpdateImgInfo
+}
 
 /**
  * 监听来自 VS Code 的消息
@@ -97,71 +253,26 @@ function listenMessage() {
     const { command } = event.data;
     console.debug('receive message:', command, event.data);
 
-    // 目录路径变更通知
-    if (command === "updateFilePath") {
-      const path = event.data?.path || '';
-      filePath.value = path; // 回填路径到输入框
-    } 
-    
-    // 图片列表变更通知
-    else if (command === "updateImgNames") {
-      const imageNames = event.data?.imageNames || [];
-      imageList.value = imageNames.map((name) => {
-        return {
-          name,
-          src: '',
-          tag: '',
-          imgPath: '',
-          tagPath: ''
-        }
-      });
-
-      // 顺带配置当前图片, 优先使用第一张图片, 否则置空，未补全的属性也置空
-      let imgTemplate = {
-        name: '',
-        src: '',
-        tag: '',
-        imgPath: '',
-        tagPath: ''
-      }
-      if (imageNames.length) {
-        imgTemplate.name = imageNames[0];
-      } 
-      currentImage.value = imgTemplate;
-
-      // 顺带加载图片信息
-      batchGetImangeInfo();
-    }
-
-    // 图片信息变更通知
-    else if (command === "updateImgInfo") {
-      const imgInfo = event.data?.info || {};
-      const loadCnt = event.data?.loadCnt || 0;
-      const totalCnt = event.data?.total || 0;
-
-      const index = imageList.value.findIndex((item) => item.name === imgInfo.name);
-
-      // 更新图片列表对应图片的src
-      if (index !== -1) {
-        imageList.value[index].src = imgInfo.src;
-        imageList.value.splice(index, 1, imgInfo);
-
-        // 更新加载进度
-        imgLoadCnt.value = loadCnt;
-        imgTotalCnt.value = totalCnt;
-      }
-
-      // 更新当前图片（如果匹配）
-      if (currentImage.value.name === imgInfo.name) {
-        currentImage.value = imgInfo;
-      }
-    }
-
-    else {
+    let handler = handlerMap[command];
+    if (handler) {
+      handler(event);
+    } else {
       console.warn('command is ignored, because it is an unknown command:', command);
     }
   });
 }
+
+
+// 计算属性区
+const targetSettings = computed(() => {
+  return {
+    targetExt: targetExt.value,
+    targetWidth: targetWidth.value,
+    targetHeight: targetHeight.value,
+    tagKeyword: tagKeyword.value,
+  }
+})
+
 
 // 更新链：
 // 1. 初始化时，请求 VS Code 扩展的当前文件路径
@@ -179,9 +290,7 @@ watch(filePath, (newValue, oldValue) => {
 });
 
 
-
 // 生命周期区
-
 onMounted(() => {
   // 监听来自 VS Code 的消息
   listenMessage();
@@ -257,10 +366,6 @@ onMounted(() => {
   flex-direction: column;
   height: 100%;
   padding-left: 20px;
-
-  .tag-wrap {
-
-  }
 }
 
 .app-middle-upper {
@@ -296,6 +401,18 @@ onMounted(() => {
   box-sizing: border-box;
 }
 
+.app-cfg {
+  form {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+
+    label {
+      font-size: 1.4rem;
+    }
+  }
+}
+
 h1 {
   font-size: 1.5rem;
 }
@@ -319,6 +436,12 @@ tr.is-current {
 
   td {
     color: white;
+  }
+}
+
+tr.is-err {
+  td {
+    color: red;
   }
 }
 

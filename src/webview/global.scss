@@ -49,8 +49,18 @@ button:hover {
     background: var(--vscode-button-hoverBackground);
 }
 
+// 添加 button 的 danger 样式
+button.danger {
+    background-color: #e74c3c; // 比较好看的红色
+    color: #ffffff; // 白字
+}
+
+button.danger:hover {
+    background-color: #c0392b; // 悬停时更深的红色
+}
+
 hr {
-    border-color: var(--vscode-divider-color);
+    border-top: 1px solid var(--vscode-divider-color);
 }
 
 table {
@@ -75,6 +85,26 @@ table {
         padding: 5px;
         border: 1px solid var(--vscode-panel-border);
     }
+}
+
+// 添加 select 元素的样式
+select {
+    background: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border: 1px solid var(--vscode-input-border, #ccc);
+    padding: 8px;
+    border-radius: 4px;
+    appearance: none; // 去除默认样式
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="black" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+    background-repeat: no-repeat;
+    background-position-x: 100%;
+    background-position-y: 5px;
+}
+
+select:hover {
+    border-color: var(--vscode-button-hoverBackground);
 }
 
 .fit-width {
