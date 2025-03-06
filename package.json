@@ -2,7 +2,7 @@
     "name": "image-tagger",
     "displayName": "Image tagger",
     "description": "A VS Code extension for tagging images with text files",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/zoka-he/vscode-image-tagger.git"

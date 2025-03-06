@@ -53,7 +53,7 @@
         
         div.tag-ctl
           h2 图片描述
-          button(:class="{ 'danger flash': mentionSaveTag }" @click="backupAndSaveTag") 备份并保存
+          button.danger.flash(v-if="mentionSaveTag" @click="backupAndSaveTag") 备份并保存
         div.tag-wrap
           textarea.fit-width(v-model="currentTag" rows="6")
         

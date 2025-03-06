@@ -1,12 +1,12 @@
 <template lang="pug">
     div.img-problem-list
-        div.img-warn(v-if="!props.imgInfo")
+        div.img-warn(v-if="!props.imgInfo?.name")
             p 未选择图片
         template(v-else)
             div.img-warn(v-if="extErr && newNameConflict")
                 p 目标格式的文件已存在
 
-            div.img-problem(v-if="sizeErr || extErr")
+            div.img-problem(v-if="!!props.imgInfo && (sizeErr || extErr)")
                 p.img-problem-item(v-if="sizeErr") 尺寸错误：{{props.imgInfo?.width}}x{{props.imgInfo?.height}}
                 p.img-problem-item(v-if="extErr") 格式错误：{{props.imgInfo?.ext}}
                 button.danger(v-if="!newNameConflict" @click="backupAndFixSizeAndExt") 备份并修正
@@ -41,9 +41,9 @@ const props = defineProps({
 });
 
 // 定义计算属性 sizeErr
-const sizeErr = computed(() => props.imgInfo && (props.settings.targetHeight != props.imgInfo.height || props.settings.targetWidth != props.imgInfo.width));
-const extErr = computed(() => props.imgInfo && (props.settings.targetExt != props.imgInfo.ext));
-const tagErr = computed(() => props.imgInfo && props.settings.tagKeyword && !props.imgInfo.tag.includes(props.settings.tagKeyword));
+const sizeErr = computed(() => !!props.imgInfo && (props.settings.targetHeight != props.imgInfo.height || props.settings.targetWidth != props.imgInfo.width));
+const extErr = computed(() => !!props.imgInfo && (props.settings.targetExt != props.imgInfo.ext));
+const tagErr = computed(() => !!props.imgInfo && props.settings.tagKeyword && !props.imgInfo.tag.includes(props.settings.tagKeyword));
 
 const newNameConflict = computed(() => {
     // 校验输入
