@@ -59,6 +59,24 @@ button.danger:hover {
     background-color: #c0392b; // 悬停时更深的红色
 }
 
+// 定义背景闪烁动画
+@keyframes backgroundFlash {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+// 添加 button 的 flash 样式
+button.flash {
+    animation: backgroundFlash 0.5s infinite;
+}
+
 hr {
     border-top: 1px solid var(--vscode-divider-color);
 }

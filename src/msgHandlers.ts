@@ -113,6 +113,27 @@ async function backupImageAndFixSizeAndExt(panel: vscode.WebviewPanel, message: 
     }
 }
 
+async function backupAndSaveTag(panel: vscode.WebviewPanel, message: any) {
+    const imgPath = message?.imgPath;
+    const tagPath = message?.tagPath;
+    const tag = message?.tag;
+
+    if (!imgPath || !tagPath || !tag) {
+        return;
+    }
+
+    try {
+        await FileService.backupAndWriteTag(tagPath, tag);
+        let imgInfo = await getOneImageInfo(imgPath);
+        panel.webview.postMessage({
+            command: "updateImgInfo",
+            info: imgInfo
+        });
+    } catch (error) {
+        LogService.log('Failed to save tag:', error);
+    }
+}
+
 const handleMap: { [key: string]: (panel: vscode.WebviewPanel, message: any, panelMgr: TaggerPanel) => any } = {
     openFileDialog: onOpenFileDialog,   // 前端打开文件夹，则返回打开的路径
     getFilePath: updateFilePath,    // 前端请求路径，则返回路径
@@ -120,6 +141,7 @@ const handleMap: { [key: string]: (panel: vscode.WebviewPanel, message: any, pan
     getImageInfos: getImageInfos,
     setCurrentDir: setCurrentDir,
     backupImageAndFixSizeAndExt: backupImageAndFixSizeAndExt,
+    backupAndSaveTag: backupAndSaveTag
 }
 
 export default handleMap;

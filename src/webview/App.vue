@@ -53,9 +53,9 @@
         
         div.tag-ctl
           h2 图片描述
-          button 备份并保存
+          button(:class="{ 'danger flash': mentionSaveTag }" @click="backupAndSaveTag") 备份并保存
         div.tag-wrap
-          textarea.fit-width(v-model="currentImage.tag" rows="6")
+          textarea.fit-width(v-model="currentTag" rows="6")
         
 </template>
 
@@ -68,6 +68,8 @@ import ImgProblem from "./components/ImgProblem.vue";
 const filePath = ref("");
 const imageList = ref([]);
 const currentImage = ref("");
+const currentTag = ref("");
+
 const imgLoadCnt = ref(0);
 const imgTotalCnt = ref(0);
 
@@ -113,8 +115,13 @@ const loadTag = (tagPath) => {
   getVscode().postMessage({ command: "loadTag", path: tagPath });
 }
 
-const saveTag = (tagPath, tagContent) => {
-  getVscode().postMessage({ command: "saveTag", path: tagPath, content: tagContent });
+const backupAndSaveTag = () => {
+  getVscode().postMessage({ 
+    command: "backupAndSaveTag", 
+    imgPath: currentImage.value.imgPath, 
+    tagPath: currentImage.value.tagPath,
+    tag: currentTag.value 
+  });
 }
 
 const checkImg = (imgInfo) => {
@@ -275,7 +282,11 @@ const targetSettings = computed(() => {
     targetHeight: targetHeight.value,
     tagKeyword: tagKeyword.value,
   }
-})
+});
+
+const mentionSaveTag = computed(() => {
+  return currentTag.value !== currentImage.value.tag;
+});
 
 
 // 更新链：
@@ -291,6 +302,12 @@ watch(filePath, (newValue, oldValue) => {
   }
 
   batchGetImangeNames(newValue);
+});
+
+watch(currentImage, (newValue, oldValue) => {
+  if (newValue) {
+    currentTag.value = newValue.tag;
+  }
 });
 
 
@@ -415,6 +432,13 @@ onMounted(() => {
       font-size: 1.4rem;
     }
   }
+}
+
+.tag-ctl {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
 }
 
 h1 {

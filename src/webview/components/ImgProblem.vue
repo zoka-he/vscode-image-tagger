@@ -1,17 +1,22 @@
 <template lang="pug">
     div.img-problem-list
-        div.img-problem(v-if="sizeErr || extErr")
-            p.img-problem-item(v-if="sizeErr") 尺寸错误：{{props.imgInfo.width}}x{{props.imgInfo.height}}
-            p.img-problem-item(v-if="extErr") 格式错误：{{props.imgInfo.ext}}
-            p.img-problem-item(v-if="newNameConflict") 目标格式的文件已存在
-            button.danger(v-else @click="backupAndFixSizeAndExt") 备份并修正
+        div.img-warn(v-if="!props.imgInfo")
+            p 未选择图片
+        template(v-else)
+            div.img-warn(v-if="extErr && newNameConflict")
+                p 目标格式的文件已存在
 
-        div.img-problem(v-if="tagErr")
-            p.img-problem-item(v-if="!props.imgInfo.tag") 未打标
-            p.img-problem-item(v-else) 缺少关键字：{{props.settings.tagKeyword}}
+            div.img-problem(v-if="sizeErr || extErr")
+                p.img-problem-item(v-if="sizeErr") 尺寸错误：{{props.imgInfo.width}}x{{props.imgInfo.height}}
+                p.img-problem-item(v-if="extErr") 格式错误：{{props.imgInfo.ext}}
+                button.danger(v-if="!newNameConflict" @click="backupAndFixSizeAndExt") 备份并修正
 
-        div.img-no-problem(v-if="!sizeErr && !extErr && !tagErr")
-            p 没有问题
+            div.img-problem(v-if="tagErr")
+                p.img-problem-item(v-if="!props.imgInfo.tag") 未打标
+                p.img-problem-item(v-else) 缺少关键字：{{props.settings.tagKeyword}}
+
+            div.img-no-problem(v-if="!sizeErr && !extErr && !tagErr")
+                p 没有问题
 
 </template>
 
@@ -118,6 +123,32 @@ p {
     line-height: 24px; 
     text-align: center;
     background-color: #2ecc71; /* 绿色背景 */
+    color: white;
+    border-radius: 50%;
+    position: absolute;
+    left: 8px;
+    top: 8px;
+}
+
+.img-warn {
+    border: 1px solid #f39c12; /* 使用黄色 */
+    color: #f39c12; /* 使用黄色 */
+    background-color: rgba(243, 156, 18, 0.1); 
+    border-radius: 4px;
+    padding: 8px;
+    position: relative;
+    padding-left: 30px; /* 为角标留出空间 */
+    margin-bottom: 10px;
+}
+
+.img-warn::before {
+    content: '!';
+    display: inline-block;
+    width: 20px;
+    height: 20px; 
+    line-height: 24px;
+    text-align: center;
+    background-color: #f39c12; /* 使用黄色 */
     color: white;
     border-radius: 50%;
     position: absolute;

@@ -136,4 +136,9 @@ export class FileService {
     static async writeText(filePath: string, text: string): Promise<void> {
         await fs.writeFile(filePath, text, 'utf-8');
     }
+
+    static async backupAndWriteTag(tagPath: string, tagContext: string): Promise<void> {
+        await this.backupFile(tagPath);
+        await this.writeText(tagPath, tagContext);
+    }
 }
