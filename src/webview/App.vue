@@ -6,7 +6,7 @@
         input.fit-width(type="text" v-model="filePath")
         button(@click="selectFile") 打开
         button(@click="batchGetImangeNames") 刷新
-        button 召唤文件管理器
+        //- button(@click="openExplorer") 召唤文件管理器
 
     div.app-cfg
       form
@@ -22,7 +22,7 @@
         label 标签关键字：
         input(:style="{ width: '40rem' }" type="search" @input="debounceSetTagKeyword")
 
-        button 在vscode中查找
+        button(@click="findInVscode") 在vscode中查找
 
     hr     
 
@@ -33,7 +33,7 @@
           table
             tbody
               tr(v-for="(info, index) in imageList" :key="index" @click="setCurrentImage(info)"
-              :class="{ 'is-current': info.name === currentImage.name, 'is-err': checkImg(info).failCnt > 0 }" )
+              :class="{ 'is-current': info.name === currentImage?.name, 'is-err': checkImg(info).failCnt > 0 }" )
                 td {{ index + 1 }}
                 td {{ info.name }}
                 td {{ info.ext }}
@@ -45,7 +45,7 @@
             div.img-ctl
               h2 图片预览
             div.img-wrap
-              img(:src="currentImage.src" :alt="currentImage.name")
+              img(:src="currentImage?.src" :alt="currentImage?.name")
           div.app-middle-upper-right
             h2 图片问题
             ImgProblem(:settings="targetSettings" :imgInfo="currentImage" :imgList="imageList") // 传递所需的 props
@@ -77,7 +77,7 @@ const targetExt = ref("jpg");
 const targetWidth = ref(512);
 const targetHeight = ref(512);
 const tagKeyword = ref("");
-const extOptions = ["jpg", "png", "jpeg", "bmp"];
+const extOptions = ["jpg", "png", "bmp"];
 
 const imgCheckMap = ref({});
 
@@ -118,10 +118,18 @@ const loadTag = (tagPath) => {
 const backupAndSaveTag = () => {
   getVscode().postMessage({ 
     command: "backupAndSaveTag", 
-    imgPath: currentImage.value.imgPath, 
-    tagPath: currentImage.value.tagPath,
+    imgPath: currentImage.value?.imgPath, 
+    tagPath: currentImage.value?.tagPath,
     tag: currentTag.value 
   });
+}
+
+const openExplorer = () => {
+  getVscode().postMessage({ command: "openExplorer", path: filePath.value });
+}
+
+const findInVscode = () => {
+  getVscode().postMessage({ command: "findInVscode", dirPath: filePath.value, keyword: tagKeyword.value });
 }
 
 const checkImg = (imgInfo) => {
@@ -244,7 +252,7 @@ function handleUpdateImgInfo(event) {
   }
 
   // 更新当前图片（如果匹配）
-  if (currentImage.value.name === indexName) {
+  if (currentImage.value?.name === indexName) {
     currentImage.value = imgInfo;
   }
 }
@@ -285,7 +293,7 @@ const targetSettings = computed(() => {
 });
 
 const mentionSaveTag = computed(() => {
-  return currentTag.value !== currentImage.value.tag;
+  return currentTag.value !== currentImage.value?.tag;
 });
 
 

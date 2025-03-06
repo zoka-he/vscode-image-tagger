@@ -134,6 +134,35 @@ async function backupAndSaveTag(panel: vscode.WebviewPanel, message: any) {
     }
 }
 
+function openExplorer(panel: vscode.WebviewPanel, message: any) {
+    const path = message?.path;
+    if (!path) {
+        return;
+    }
+
+    vscode.commands.executeCommand('revealInExplorer', vscode.Uri.file(path));
+}
+
+async function findInVscode(panel: vscode.WebviewPanel, message: any) {
+    // 1. 从 message 中提取 dirPath 和 keyword
+    const dirPath = message?.dirPath;
+    const keyword = message?.keyword;
+
+    // 2. 校验这两个值，都不能为空
+    if (!dirPath || !keyword) {
+        return;
+    }
+
+    const currentViewColumn = panel.viewColumn; // 记录当前视图
+    // 3. vscode 侧边栏切换到“在文件夹中搜索”，搜索范围是 dirPath，关键字是 keyword
+    await vscode.commands.executeCommand('workbench.action.findInFiles', {
+        query: keyword,
+        folder: vscode.Uri.file(dirPath),
+        triggerSearch: true
+    });
+    panel.reveal(currentViewColumn);
+}
+
 const handleMap: { [key: string]: (panel: vscode.WebviewPanel, message: any, panelMgr: TaggerPanel) => any } = {
     openFileDialog: onOpenFileDialog,   // 前端打开文件夹，则返回打开的路径
     getFilePath: updateFilePath,    // 前端请求路径，则返回路径
@@ -141,7 +170,9 @@ const handleMap: { [key: string]: (panel: vscode.WebviewPanel, message: any, pan
     getImageInfos: getImageInfos,
     setCurrentDir: setCurrentDir,
     backupImageAndFixSizeAndExt: backupImageAndFixSizeAndExt,
-    backupAndSaveTag: backupAndSaveTag
+    backupAndSaveTag: backupAndSaveTag,
+    openExplorer: openExplorer,
+    findInVscode: findInVscode
 }
 
 export default handleMap;

@@ -7,12 +7,12 @@
                 p 目标格式的文件已存在
 
             div.img-problem(v-if="sizeErr || extErr")
-                p.img-problem-item(v-if="sizeErr") 尺寸错误：{{props.imgInfo.width}}x{{props.imgInfo.height}}
-                p.img-problem-item(v-if="extErr") 格式错误：{{props.imgInfo.ext}}
+                p.img-problem-item(v-if="sizeErr") 尺寸错误：{{props.imgInfo?.width}}x{{props.imgInfo?.height}}
+                p.img-problem-item(v-if="extErr") 格式错误：{{props.imgInfo?.ext}}
                 button.danger(v-if="!newNameConflict" @click="backupAndFixSizeAndExt") 备份并修正
 
             div.img-problem(v-if="tagErr")
-                p.img-problem-item(v-if="!props.imgInfo.tag") 未打标
+                p.img-problem-item(v-if="!props.imgInfo?.tag") 未打标
                 p.img-problem-item(v-else) 缺少关键字：{{props.settings.tagKeyword}}
 
             div.img-no-problem(v-if="!sizeErr && !extErr && !tagErr")
@@ -41,22 +41,23 @@ const props = defineProps({
 });
 
 // 定义计算属性 sizeErr
-const sizeErr = computed(() => props.settings.targetHeight != props.imgInfo.height || props.settings.targetWidth != props.imgInfo.width);
-const extErr = computed(() => props.settings.targetExt != props.imgInfo.ext);
-const tagErr = computed(() => props.settings.tagKeyword && !props.imgInfo.tag.includes(props.settings.tagKeyword));
+const sizeErr = computed(() => props.imgInfo && (props.settings.targetHeight != props.imgInfo.height || props.settings.targetWidth != props.imgInfo.width));
+const extErr = computed(() => props.imgInfo && (props.settings.targetExt != props.imgInfo.ext));
+const tagErr = computed(() => props.imgInfo && props.settings.tagKeyword && !props.imgInfo.tag.includes(props.settings.tagKeyword));
+
 const newNameConflict = computed(() => {
     // 校验输入
     if (typeof props.imgInfo?.name!== 'string' || typeof props.settings?.targetExt!== 'string' || !Array.isArray(props.imgList)) {
         return false;
     }
-    const newFileName = props.imgInfo.name.replace(/\.\w+$/, props.settings.targetExt);
+    const newFileName = props.imgInfo?.name.replace(/\.\w+$/, props.settings.targetExt);
     return props.imgList.some(img => img.name === newFileName);
 });
 
 function backupAndFixSizeAndExt() {
     getVscode().postMessage({
         command: 'backupImageAndFixSizeAndExt',
-        imgPath: props.imgInfo.imgPath, // 图片路径
+        imgPath: props.imgInfo?.imgPath, // 图片路径
         targetHeight: props.settings.targetHeight, // 目标高度
         targetWidth: props.settings.targetWidth, // 目标宽度
         targetExt: props.settings.targetExt // 目标格式

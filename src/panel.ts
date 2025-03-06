@@ -5,7 +5,6 @@ import PathService from './services/pathService';
 import LogService from './services/logService';
 
 export class TaggerPanel {
-    public static currentMgr: TaggerPanel | undefined;
     private initDir: string | null = null;
     private currentDir: string | null = null;
     private panel: vscode.WebviewPanel | undefined;
@@ -31,7 +30,8 @@ export class TaggerPanel {
             vscode.ViewColumn.One,
             {
                 enableScripts: true,
-                localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'out', 'webview'))] // 允许访问资源文件
+                localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'out', 'webview'))], // 允许访问资源文件
+                retainContextWhenHidden: true, // 隐藏时保持内容
             }
         );
 
@@ -39,7 +39,7 @@ export class TaggerPanel {
         const scriptUri = panel.webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'out', 'webview', 'main.iife.js')));
         const styleUri = panel.webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, 'out', 'webview','main.css')));
         
-        panel.webview.html = `
+        const generatedHtml = `
             <!DOCTYPE html>
             <html lang="en">
             <head>
@@ -56,14 +56,36 @@ export class TaggerPanel {
             </html>
         `;
 
+        panel.webview.html = generatedHtml;
+
+        let watchdogTimeout: NodeJS.Timeout | undefined;
+
+        // 重置看门狗
+        function resetWatchdog() {
+            if (watchdogTimeout) {
+                clearTimeout(watchdogTimeout);
+            }
+            watchdogTimeout = setTimeout(() => {
+                console.log('panel die');
+
+                // BUG 由于搜索时，会被不明原因销毁，只能重新创建面板
+                panel.dispose();
+                new TaggerPanel(context, imageDir);
+            }, 1000);
+        }
 
         // 监听 Webview 发送的消息，并处理它们
         panel.webview.onDidReceiveMessage(
             async (message) => {
-                LogService.log(message);
-                let handler = msgHandlers[message.command];
-                if (handler) {
-                    handler(panel, message, this);
+                if (message.command === 'heartbeat') {
+                    // console.log('Webview 仍然活跃');
+                    resetWatchdog();
+                } else {
+                    LogService.log(message);
+                    let handler = msgHandlers[message.command];
+                    if (handler) {
+                        handler(panel, message, this);
+                    }
                 }
             },
             undefined,
@@ -71,14 +93,18 @@ export class TaggerPanel {
         );
 
         panel.onDidDispose(() => {
-            TaggerPanel.currentMgr = undefined;
+            LogService.log('Panel disposed');
+            clearTimeout(watchdogTimeout);
         });
 
         this.panel = panel;
+
+        // 初始化看门狗
+        resetWatchdog();
     }
 
     public static create(context: vscode.ExtensionContext, imageDir: string | null) {
-        TaggerPanel.currentMgr = new TaggerPanel(context, imageDir);
+        new TaggerPanel(context, imageDir);
     }
 
     /**
