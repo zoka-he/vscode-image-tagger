@@ -6,11 +6,12 @@
         input.fit-width(type="text" v-model="filePath")
         button(@click="selectFile") 打开
         button(@click="batchGetImangeNames") 刷新
+        button 召唤文件管理器
 
     div.app-cfg
       form
         label 目标图片格式：
-        select(v-model="targetExt")
+        select(:style="{ width: '3rem' }" v-model="targetExt")
           option(v-for="option in extOptions" :value="option") {{ option }}
         
         label 目标图片尺寸：
@@ -20,6 +21,8 @@
 
         label 标签关键字：
         input(:style="{ width: '40rem' }" type="search" @input="debounceSetTagKeyword")
+
+        button 在vscode中查找
 
     hr     
 
@@ -50,6 +53,7 @@
         
         div.tag-ctl
           h2 图片描述
+          button 备份并保存
         div.tag-wrap
           textarea.fit-width(v-model="currentImage.tag" rows="6")
         
